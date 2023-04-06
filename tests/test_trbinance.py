@@ -10,7 +10,7 @@ class TestTrbinancePublicEndpoints(unittest.TestCase):
         self.api_key = 'YOUR_API_KEY'
         self.secret_key = 'YOUR_SECRET_KEY'
         # self.base_url = 'https://test.trbinance.com'  # Use test environment URL
-        self.trbinance = trbinance.TrBinance(self.api_key, self.secret_key)
+        self.trbinance = trbinance.Client(self.api_key, self.secret_key)
 
     @staticmethod
     def _load_test_data(filename):

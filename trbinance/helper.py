@@ -5,6 +5,7 @@ def convert_symboldata_format(input_data):
     output_data = {
         'id': input_data['symbol'].replace('_', ''),
         'symbol': convert_symbol_convention_from(input_data['symbol']),
+        'symbolType' : input_data['type'],
         'base': input_data['baseAsset'],
         'quote': input_data['quoteAsset'],
         'baseId': input_data['baseAsset'],
