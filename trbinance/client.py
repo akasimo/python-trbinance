@@ -3,9 +3,9 @@ import time
 import hmac
 import hashlib
 
-from helper import convert_symbol_convention_from, convert_symbol_convention_to, convert_symboldata_format
+from .helper import convert_symbol_convention_from, convert_symbol_convention_to, convert_symboldata_format
 
-from defines import *
+from .defines import *
 
 class Client:
     id = 'trbinance'
