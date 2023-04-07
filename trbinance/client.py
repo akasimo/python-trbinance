@@ -30,12 +30,13 @@ class Client:
         else:
             url = self.urls["base"] + endpoint
 
-        if security_type.lower() in ['private', 'signed']:
-            params['timestamp'] = int(time.time() * 1000)
-            signature = self._generate_signature(params)
-            params['signature'] = signature
-
         with requests.Session() as session:
+            if security_type.lower() in ['private', 'signed']:
+                params['timestamp'] = int(time.time() * 1000)
+                signature = self._generate_signature(params)
+                params['signature'] = signature
+                session.headers.update({'X-MBX-APIKEY': self.api_key})
+                
             if method == 'GET':
                 response = session.get(url, params=params)
             elif method == 'POST':
@@ -54,7 +55,10 @@ class Client:
     def _handle_response(self, raw_response):
         response = raw_response.json()
         if "code" in response:
-            if response['code'] != 0:
+            if response['code'] == 3219:
+                print("Already cancelled")
+                return {"data": []}
+            elif response['code'] != 0:
                 raise Exception(f"Error {response['code']}: {response['msg']}")
         return response
 
@@ -174,8 +178,8 @@ class Client:
         # assert order_type in ['limit', 'market'], "order_type must be either 'limit' or 'market'"
 
         order_type_num = OrderType[order_type.upper()].value
-        if kwargs.get('postOnly', False):
-            order_type_num = OrderType["LIMIT_MAKER"].value
+        
+        assert order_type_num in [1,2,4,6], "order_type must be either 'LIMIT','MARKET','STOP_LOSS_LIMIT' or 'TAKE_PROFIT_LIMIT' "
 
         params = {
             'symbol': origin_symbol,
@@ -187,8 +191,8 @@ class Client:
         
         endpoint = "/orders"
         symbol_type = 0
-        data = self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
-        return data
+        resp = self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
+        return resp["data"]
 
     def query_order(self, orderId, **kwargs):
         params = {
@@ -198,8 +202,8 @@ class Client:
         }
 
         endpoint = "/orders/detail"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def cancel_order(self, orderId, **kwargs):
         params = {
@@ -208,8 +212,8 @@ class Client:
             **kwargs
         }
         endpoint = "/orders/cancel"
-        data = self._request("POST", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("POST", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def all_orders(self, symbol=None, **kwargs):
         params = {
@@ -221,8 +225,8 @@ class Client:
             origin_symbol = convert_symbol_convention_to(symbol)
             params['symbol'] = origin_symbol
         endpoint = "/orders"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]["list"]
 
     def new_oco(self, symbol, side, quantity, price, stopPrice, stopLimitPrice, **kwargs):
         params = {
@@ -237,8 +241,8 @@ class Client:
         }
         endpoint = "/orders/oco"
         symbol_type = 0
-        data = self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
-        return data
+        resp = self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
+        return resp["data"]
 
     def account_information(self, **kwargs):
         params = {
@@ -246,8 +250,8 @@ class Client:
             **kwargs
         }
         endpoint = "/account/spot"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def account_asset_information(self, asset, **kwargs):
         params = {
@@ -256,8 +260,8 @@ class Client:
             **kwargs
         }
         endpoint = "/account/spot/asset"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def account_trade_list(self, symbol, **kwargs):
         params = {
@@ -266,8 +270,8 @@ class Client:
             **kwargs
         }
         endpoint = "/orders/trades"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def withdraw(self, asset, address, amount, **kwargs):
         params = {
@@ -278,8 +282,8 @@ class Client:
             **kwargs
         }
         endpoint = "/withdraws"
-        data = self._request("POST", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("POST", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def withdraw_history(self, **kwargs):
         params = {
@@ -287,8 +291,8 @@ class Client:
             **kwargs
         }
         endpoint = "/withdraws"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
     def deposit_history(self, **kwargs):
         params = {
@@ -296,8 +300,8 @@ class Client:
             **kwargs
         }
         endpoint = "/deposits"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
 
 
     def deposit_address(self, asset, network, **kwargs):
@@ -308,5 +312,5 @@ class Client:
             **kwargs
         }
         endpoint = "/deposits/address"
-        data = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return data
+        resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        return resp["data"]
