@@ -1,6 +1,6 @@
 import math
 
-def convert_symboldata_format(input_data):
+def format_symbol_data(input_data):
     filters = {item['filterType']: item for item in input_data["filters"]}
     output_data = {
         'id': input_data['symbol'].replace('_', ''),
@@ -65,6 +65,14 @@ def convert_symboldata_format(input_data):
         'lowercaseId': input_data['symbol'].replace('/', '').lower()
     }
     return output_data
+
+def format_market_data(item):
+    item_copy = item.copy()
+    item_copy['symbol'] = convert_symbol_convention_from(item['symbol'])
+    for key in ["price", "volume", "baseVolume", "amount", "quoteVolume", "low", "high", "open", "close", "change24h"]:
+        if key in item_copy:
+            item_copy[key] = float(item_copy[key])
+    return item_copy
 
 def convert_symbol_convention_from(symbol):
     """

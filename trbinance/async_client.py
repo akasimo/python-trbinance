@@ -1,10 +1,9 @@
 import aiohttp
-import asyncio
 import time
 
-from .helper import convert_symbol_convention_from, convert_symbol_convention_to, convert_symboldata_format
+from .helper import convert_symbol_convention_from, convert_symbol_convention_to, format_symbol_data, format_market_data
 from .defines import *
-from .baseclient import BaseClient
+from .base_client import BaseClient
 
 class AsyncClient(BaseClient):
     def __init__(self, *args, **kwargs):
@@ -14,6 +13,8 @@ class AsyncClient(BaseClient):
     async def _request(self, method, endpoint, security_type, symbol_type=0, params=None):
         if symbol_type == 1:
             url = self.urls["type1"] + endpoint
+        elif symbol_type == "hidden":
+            url = self.urls["hidden"] + endpoint
         else:
             url = self.urls["base"] + endpoint
 
@@ -51,13 +52,29 @@ class AsyncClient(BaseClient):
     async def get_symbols(self):
         endpoint = '/common/symbols'
         response = await self._request('GET', endpoint, 'public')
-        data = [convert_symboldata_format(i) for i in response['data']['list']]
+        data = [format_symbol_data(i) for i in response['data']['list']]
         self.symbols = [d['symbol'] for d in data]
         
         data = {d["symbol"]: d for d in data}
         self.markets = data
         return data
 
+    async def get_market_info(self, quoteAsset=None, offset=0, limit=1000):
+        endpoint = '/market/trading-pairs'
+        params = {
+            "limit": limit,
+        }
+
+        if offset != 0:
+            params["offset"] = offset
+        if quoteAsset:
+            params["quoteAsset"] = quoteAsset
+
+        response = await self._request("GET", endpoint, "public", symbol_type="hidden", params=params)
+        data = response["data"]["list"]
+        data = [format_market_data(i) for i in data]
+        return data
+    
     async def get_symbol_type(self, symbol):
         if self.symbols is None:
             self.get_symbols()

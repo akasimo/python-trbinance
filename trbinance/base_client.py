@@ -6,7 +6,8 @@ class BaseClient:
     name = 'TrBinance'
     urls = {
             "base" : "https://www.trbinance.com/open/v1",
-            "type1" : "https://api.binance.me/api"
+            "type1" : "https://api.binance.me/api",
+            "hidden" : "https://www.trbinance.com/v1"
         }
     
     def __init__(self, api_key="", secret_key=""):

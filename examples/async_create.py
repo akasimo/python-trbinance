@@ -13,6 +13,7 @@ secret_key = os.getenv("SECRET_KEY","")
 async def main():
     async_client = AsyncClient(api_key, secret_key)
 
+    start = time.time()
     symbol = "BTC/USDT"
     side = "BUY"
     order_type = "LIMIT"
@@ -42,5 +43,7 @@ async def main():
     print("Cancelled orders:", [order["orderId"] for order in cancelled_orders])
     print("Account information:", account_info)
     print("All open orders:", [order["orderId"] for order in all_orders if order["status"] == "OPEN"])
+    end = time.time()
+    print("Time elapsed:", end-start)
 
 asyncio.run(main())
