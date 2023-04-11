@@ -73,6 +73,7 @@ class AsyncClient(BaseClient):
         response = await self._request("GET", endpoint, "public", symbol_type="hidden", params=params)
         data = response["data"]["list"]
         data = [format_market_data(i) for i in data]
+        data = {i["symbol"]: i for i in data}
         return data
     
     async def get_symbol_type(self, symbol):

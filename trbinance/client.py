@@ -74,6 +74,7 @@ class Client(BaseClient):
         data = response["data"]["list"]
         
         data = [format_market_data(i) for i in data]
+        data = {i["symbol"]: i for i in data}
         return data
 
     def get_symbol_type(self, symbol):
