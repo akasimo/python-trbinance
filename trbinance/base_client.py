@@ -15,6 +15,7 @@ class BaseClient:
         self.secret_key = secret_key
         self.markets = None
         self.symbols = None
+        self.used_weight = {}
 
     def _generate_signature(self, params):
         query_string = '&'.join([f"{key}={value}" for key, value in params.items()])

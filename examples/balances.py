@@ -11,4 +11,4 @@ secret_key = os.getenv("SECRET_KEY","")
 client = Client(api_key, secret_key)
 
 resp = client.account_balance()
-print("Account information:", resp)
+print(client.used_weight)

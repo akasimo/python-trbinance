@@ -35,6 +35,13 @@ class AsyncClient(BaseClient):
 
     async def _handle_response(self, raw_response):
         response = await raw_response.json()
+        used_weight = [x for x in list(raw_response.headers) if "X-MBX-USED-" in x.upper()]
+        for x in used_weight:
+            timeframe = x.split("-")[-1]
+            if timeframe == "weight":
+                timeframe = "total"
+            self.used_weight[timeframe] = float(raw_response.headers[x])
+            
         if "code" in response:
             if response['code'] == 3219:
                 print("Already cancelled")
