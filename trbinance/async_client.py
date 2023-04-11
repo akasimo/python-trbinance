@@ -251,6 +251,17 @@ class AsyncClient(BaseClient):
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
         return resp["data"]
 
+    async def account_balance(self):
+        data = await self.account_information()
+        balance_list = data['accountAssets']
+        balance_dict = {
+            **{item['asset']: {'free': float(item['free']), 'locked': float(item['locked']), 'total': float(item['free']) + float(item['locked'])} for item in balance_list},
+            'free': {item['asset']: float(item['free']) for item in balance_list if float(item['free']) > 0},
+            'locked': {item['asset']: float(item['locked']) for item in balance_list if float(item['locked']) > 0},
+            'total': {item['asset']: float(item['free']) + float(item['locked']) for item in balance_list if float(item['free']) + float(item['locked']) > 0}
+        }
+        return balance_dict
+    
     async def account_asset_information(self, asset, **kwargs):
         params = {
             'asset': asset,
