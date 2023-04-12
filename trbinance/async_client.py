@@ -41,13 +41,7 @@ class AsyncClient(BaseClient):
             if timeframe == "weight":
                 timeframe = "total"
             self.used_weight[timeframe] = float(raw_response.headers[x])
-            
-        if "code" in response:
-            if response['code'] == 3219:
-                print("Already cancelled")
-                return {"data": []}
-            elif response['code'] != 0:
-                raise Exception(f"Error {response['code']}: {response['msg']}")
+        
         return response
     
     async def check_server_time(self):
@@ -206,6 +200,8 @@ class AsyncClient(BaseClient):
 
         endpoint = "/orders/detail"
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        if "data" not in resp:
+            return resp
         data = format_order_data(resp["data"])
         return data
 
@@ -217,6 +213,8 @@ class AsyncClient(BaseClient):
         }
         endpoint = "/orders/cancel"
         resp = await self._request("POST", endpoint, "private", symbol_type=0, params=params)
+        if "data" not in resp:
+            return resp
         data = format_order_data(resp["data"])
         return data
 
