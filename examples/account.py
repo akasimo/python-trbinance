@@ -10,5 +10,5 @@ secret_key = os.getenv("SECRET_KEY","")
 
 client = Client(api_key, secret_key)
 
-resp = client.account_information()
+resp = client.account_balance()
 print(resp)

@@ -255,17 +255,14 @@ class AsyncClient(BaseClient):
         }
         endpoint = "/account/spot"
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
+        data = resp["data"]
+        data['accountAssets'] = format_balance(data['accountAssets']) 
+        return data
 
     async def account_balance(self):
         data = await self.account_information()
         balance_list = data['accountAssets']
-        balance_dict = {
-            **{item['asset']: {'free': float(item['free']), 'locked': float(item['locked']), 'total': float(item['free']) + float(item['locked'])} for item in balance_list},
-            'free': {item['asset']: float(item['free']) for item in balance_list if float(item['free']) > 0},
-            'locked': {item['asset']: float(item['locked']) for item in balance_list if float(item['locked']) > 0},
-            'total': {item['asset']: float(item['free']) + float(item['locked']) for item in balance_list if float(item['free']) + float(item['locked']) > 0}
-        }
+        balance_dict = format_balance(balance_list)
         return balance_dict
     
     async def account_asset_information(self, asset, **kwargs):

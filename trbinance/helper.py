@@ -79,6 +79,15 @@ def format_order_data(input_data):
             input_data[float_key] = float(input_data[float_key])
     return input_data
 
+def format_balance(balance_list):
+    balance_dict = {
+            **{item['asset']: {'free': float(item['free']), 'locked': float(item['locked']), 'total': float(item['free']) + float(item['locked'])} for item in balance_list},
+            'free': {item['asset']: float(item['free']) for item in balance_list if float(item['free']) > 0},
+            'locked': {item['asset']: float(item['locked']) for item in balance_list if float(item['locked']) > 0},
+            'total': {item['asset']: float(item['free']) + float(item['locked']) for item in balance_list if float(item['free']) + float(item['locked']) > 0}
+        }
+    return balance_dict
+
 def format_market_data(item):
     item_copy = item.copy()
     item_copy['symbol'] = convert_symbol_convention_from(item['symbol'])
