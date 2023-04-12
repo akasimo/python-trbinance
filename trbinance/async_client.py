@@ -1,7 +1,7 @@
 import aiohttp
 import time
 
-from .helper import convert_symbol_convention_from, convert_symbol_convention_to, format_symbol_data, format_market_data
+from .helper import *
 from .defines import *
 from .base_client import BaseClient
 
@@ -177,11 +177,8 @@ class AsyncClient(BaseClient):
         return data
 
     async def create_order(self, symbol, side, order_type, **kwargs):
+
         origin_symbol = convert_symbol_convention_to(symbol)
-
-        # assert side.lower() in ['buy','sell'], "side must be either 'buy' or 'sell'"
-        # assert order_type in ['limit', 'market'], "order_type must be either 'limit' or 'market'"
-
         order_type_num = OrderType[order_type.upper()].value
         
         assert order_type_num in [1,2,4,6], "order_type must be either 'LIMIT','MARKET','STOP_LOSS_LIMIT' or 'TAKE_PROFIT_LIMIT' "
@@ -197,7 +194,8 @@ class AsyncClient(BaseClient):
         endpoint = "/orders"
         symbol_type = 0
         resp = await self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
-        return resp["data"]
+        data = format_order_data(resp["data"])
+        return data
 
     async def query_order(self, orderId, **kwargs):
         params = {
@@ -208,7 +206,8 @@ class AsyncClient(BaseClient):
 
         endpoint = "/orders/detail"
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
+        data = format_order_data(resp["data"])
+        return data
 
     async def cancel_order(self, orderId, **kwargs):
         params = {
@@ -218,7 +217,8 @@ class AsyncClient(BaseClient):
         }
         endpoint = "/orders/cancel"
         resp = await self._request("POST", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
+        data = format_order_data(resp["data"])
+        return data
 
     async def all_orders(self, symbol=None, **kwargs):
         params = {
@@ -231,7 +231,8 @@ class AsyncClient(BaseClient):
             params['symbol'] = origin_symbol
         endpoint = "/orders"
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]["list"]
+        data = format_order_data(resp["data"])
+        return data
 
     async def new_oco(self, symbol, side, quantity, price, stopPrice, stopLimitPrice, **kwargs):
         params = {

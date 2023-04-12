@@ -16,12 +16,12 @@ order_type = "LIMIT"
 quantity = "0.001"
 price = "10000"
 
-resp = client.create_order(symbol, side, order_type, quantity=quantity, price=price)
-print("Create order:", resp)
+resp_create = client.create_order(symbol, side, order_type, quantity=quantity, price=price)
+print("Create order:", resp_create)
 
-order_id = resp["orderId"]
-resp = client.query_order(order_id)
-print("Query order:", resp)
+order_id = resp_create["orderId"]
+resp_query = client.query_order(order_id)
+print("Query order:", resp_query)
 
-resp = client.cancel_order(order_id)
-print("Cancel order:", resp)
+resp_cancel = client.cancel_order(order_id)
+print("Cancel order:", resp_cancel)

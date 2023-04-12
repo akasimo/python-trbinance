@@ -1,4 +1,7 @@
 import math
+from .defines import Side, OrderStatus
+
+ORDER_FLOAT_KEYS = ["price", "origQty", "origQuoteQty", "executedPrice", "executedQty", "executedQuoteQty", "stopPrice", "icebergQty"]
 
 def format_symbol_data(input_data):
     filters = {item['filterType']: item for item in input_data["filters"]}
@@ -65,6 +68,16 @@ def format_symbol_data(input_data):
         'lowercaseId': input_data['symbol'].replace('/', '').lower()
     }
     return output_data
+
+def format_order_data(input_data):
+    input_data["orderId"] = str(input_data["orderId"])
+    input_data["symbol"] = convert_symbol_convention_from(input_data["symbol"])
+    input_data["side_name"] = Side(input_data["side"]).name
+    input_data["status_name"] = OrderStatus(input_data["status"]).name
+    for float_key in ORDER_FLOAT_KEYS:
+        if float_key in input_data:
+            input_data[float_key] = float(input_data[float_key])
+    return input_data
 
 def format_market_data(item):
     item_copy = item.copy()

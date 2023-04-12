@@ -1,7 +1,7 @@
 import requests
 import time
 
-from .helper import convert_symbol_convention_from, convert_symbol_convention_to, format_market_data, format_symbol_data
+from .helper import *
 from .defines import *
 from .base_client import BaseClient
 
@@ -178,11 +178,29 @@ class Client(BaseClient):
         return data
 
     def create_order(self, symbol, side, order_type, **kwargs):
+        # {
+        #     'orderId': '5467573389', 
+        #     'bOrderListId': 0, 
+        #     'clientId': 'e8d4abfa4e0774c039aec7717b5f1b4b9', 
+        #     'bOrderId': 207765154128, 
+        #     'symbol': 'BTC_USDT', 
+        #     'symbolType': 1, 
+        #     'side': 0, 
+        #     'type': 1, 
+        #     'price': '10000', 
+        #     'origQty': '0.001', 
+        #     'origQuoteQty': '10.00000000', 
+        #     'executedQty': '0.00000000', 
+        #     'executedPrice': '0', 
+        #     'executedQuoteQty': '0.00000000', 
+        #     'timeInForce': 1, 
+        #     'stopPrice': 0, 
+        #     'icebergQty': '0', 
+        #     'status': 0, 
+        #     'createTime': 1681279199188
+        # }
+
         origin_symbol = convert_symbol_convention_to(symbol)
-
-        # assert side.lower() in ['buy','sell'], "side must be either 'buy' or 'sell'"
-        # assert order_type in ['limit', 'market'], "order_type must be either 'limit' or 'market'"
-
         order_type_num = OrderType[order_type.upper()].value
         
         assert order_type_num in [1,2,4,6], "order_type must be either 'LIMIT','MARKET','STOP_LOSS_LIMIT' or 'TAKE_PROFIT_LIMIT' "
@@ -198,9 +216,32 @@ class Client(BaseClient):
         endpoint = "/orders"
         symbol_type = 0
         resp = self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
-        return resp["data"]
+        data = format_order_data(resp["data"])
+        return data
 
     def query_order(self, orderId, **kwargs):
+        # {
+        #     'orderId': '5467572389', 
+        #     'clientId': 'e8d4abfa4e0774c039aec7717b5f1b4b9', 
+        #     'bOrderId': '207765135418', 
+        #     'bOrderListId': '0', 
+        #     'symbol': 'BTC_USDT', 
+        #     'symbolType': 1, 
+        #     'side': 0, 
+        #     'type': 1, 
+        #     'price': '10000', 
+        #     'origQty': '0.001', 
+        #     'origQuoteQty': '10', 
+        #     'executedQty': '0', 
+        #     'executedPrice': '0', 
+        #     'executedQuoteQty': '0', 
+        #     'timeInForce': 1, 
+        #     'stopPrice': '0', 
+        #     'icebergQty': '0', 
+        #     'status': 0, 
+        #     'createTime': 1681279392188
+        #     }
+
         params = {
             'orderId': orderId,
             'timestamp': int(time.time() * 1000),
@@ -209,9 +250,30 @@ class Client(BaseClient):
 
         endpoint = "/orders/detail"
         resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
+        data = format_order_data(resp["data"])
+        return data
 
     def cancel_order(self, orderId, **kwargs):
+        # {
+        #     'orderId': '5467571389', 
+        #     'bOrderListId': '0', 
+        #     'clientId': 'e8d4abf4ae0774c039aec7717b5f1b4b9', 
+        #     'bOrderId': '207736515418', 
+        #     'symbol': 'BTC_USDT', 
+        #     'symbolType': 1, 
+        #     'type': 1, 
+        #     'side': 0, 
+        #     'price': '10000.0000000000000000', 
+        #     'origQty': '0.0010000000000000', 
+        #     'origQuoteQty': '10.0000000000000000', 
+        #     'executedPrice': '0.0000000000000000', 
+        #     'executedQty': '0.00000000', 
+        #     'executedQuoteQty': '0.00000000', 
+        #     'timeInForce': 1, 
+        #     'stopPrice': '0.0000000000000000', 
+        #     'icebergQty': '0.0000000000000000', 
+        #     'status': 3
+        # }
         params = {
             'orderId': orderId,
             'timestamp': int(time.time() * 1000),
@@ -219,7 +281,8 @@ class Client(BaseClient):
         }
         endpoint = "/orders/cancel"
         resp = self._request("POST", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
+        data = format_order_data(resp["data"])
+        return data
 
     def all_orders(self, symbol=None, **kwargs):
         params = {
@@ -232,7 +295,9 @@ class Client(BaseClient):
             params['symbol'] = origin_symbol
         endpoint = "/orders"
         resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]["list"]
+        data_list = resp["data"]["list"]
+        data = [format_order_data(i) for i in data_list]
+        return data
 
     def new_oco(self, symbol, side, quantity, price, stopPrice, stopLimitPrice, **kwargs):
         params = {
