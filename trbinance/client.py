@@ -34,7 +34,8 @@ class Client(BaseClient):
         response.raise_for_status()
         return self._handle_response(response)
 
-    def _handle_response(self, raw_response):
+    def _handle_response(self, raw_response, **kwargs):
+        response = raw_response.json()
         used_weight = [x for x in list(raw_response.headers) if "X-MBX-USED-" in x.upper()]
         for x in used_weight:
             timeframe = x.split("-")[-1]
@@ -42,13 +43,6 @@ class Client(BaseClient):
                 timeframe = "total"
             self.used_weight[timeframe] = float(raw_response.headers[x])
 
-        response = raw_response.json()
-        if "code" in response:
-            if response['code'] == 3219:
-                print("Already cancelled")
-                return {"data": []}
-            elif response['code'] != 0:
-                raise Exception(f"Error {response['code']}: {response['msg']}")
         return response
     
     def check_server_time(self):
@@ -250,6 +244,8 @@ class Client(BaseClient):
 
         endpoint = "/orders/detail"
         resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
+        if "data" not in resp:
+            return resp
         data = format_order_data(resp["data"])
         return data
 
@@ -281,6 +277,8 @@ class Client(BaseClient):
         }
         endpoint = "/orders/cancel"
         resp = self._request("POST", endpoint, "private", symbol_type=0, params=params)
+        if "data" not in resp:
+            return resp
         data = format_order_data(resp["data"])
         return data
 
