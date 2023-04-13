@@ -188,6 +188,9 @@ class AsyncClient(BaseClient):
         endpoint = "/orders"
         symbol_type = 0
         resp = await self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
+        if "code" in resp:
+            if resp["code"] != 0:
+                return resp
         data = format_order_data(resp["data"])
         return data
 
@@ -229,7 +232,8 @@ class AsyncClient(BaseClient):
             params['symbol'] = origin_symbol
         endpoint = "/orders"
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        data = format_order_data(resp["data"])
+        data_list = resp["data"]["list"]
+        data = [format_order_data(i) for i in data_list]
         return data
 
     async def new_oco(self, symbol, side, quantity, price, stopPrice, stopLimitPrice, **kwargs):
@@ -261,8 +265,7 @@ class AsyncClient(BaseClient):
 
     async def account_balance(self):
         data = await self.account_information()
-        balance_list = data['accountAssets']
-        balance_dict = format_balance(balance_list)
+        balance_dict = data['accountAssets']
         return balance_dict
     
     async def account_asset_information(self, asset, **kwargs):
@@ -275,15 +278,17 @@ class AsyncClient(BaseClient):
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
         return resp["data"]
 
-    async def account_trade_list(self, symbol, **kwargs):
+    async def account_trade_list(self, symbol=None, **kwargs):
         params = {
-            'symbol': convert_symbol_convention_to(symbol),
             'timestamp': int(time.time() * 1000),
             **kwargs
         }
+        if symbol is not None:
+            origin_symbol = convert_symbol_convention_to(symbol)
+            params['symbol'] = origin_symbol
         endpoint = "/orders/trades"
         resp = await self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
+        return resp["data"]["list"]
 
     async def withdraw(self, asset, address, amount, **kwargs):
         params = {

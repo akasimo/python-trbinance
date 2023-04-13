@@ -210,6 +210,9 @@ class Client(BaseClient):
         endpoint = "/orders"
         symbol_type = 0
         resp = self._request("POST", endpoint, "private", symbol_type=symbol_type, params=params)
+        if "code" in resp:
+            if resp["code"] != 0:
+                return resp
         data = format_order_data(resp["data"])
         return data
 
@@ -326,8 +329,7 @@ class Client(BaseClient):
 
     def account_balance(self):
         data = self.account_information()
-        balance_list = data['accountAssets']
-        balance_dict = format_balance(balance_list)
+        balance_dict = data['accountAssets']
         return balance_dict
     
     def account_asset_information(self, asset, **kwargs):
@@ -340,16 +342,18 @@ class Client(BaseClient):
         resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
         return resp["data"]
 
-    def account_trade_list(self, symbol, **kwargs):
+    def account_trade_list(self, symbol=None, **kwargs):
         params = {
-            'symbol': convert_symbol_convention_to(symbol),
             'timestamp': int(time.time() * 1000),
             **kwargs
         }
+        if symbol is not None:
+            origin_symbol = convert_symbol_convention_to(symbol)
+            params['symbol'] = origin_symbol
         endpoint = "/orders/trades"
         resp = self._request("GET", endpoint, "private", symbol_type=0, params=params)
-        return resp["data"]
-
+        return resp["data"]["list"]
+    
     def withdraw(self, asset, address, amount, **kwargs):
         params = {
             'asset': asset,
