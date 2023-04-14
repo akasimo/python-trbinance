@@ -14,3 +14,4 @@ resp = client.all_orders()
 print("All orders:")
 for order in resp:
     print(order)
+    # client.cancel_order(order["orderId"])

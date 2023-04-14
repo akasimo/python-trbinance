@@ -214,6 +214,7 @@ class Client(BaseClient):
             if resp["code"] != 0:
                 return resp
         data = format_order_data(resp["data"])
+        data["timestamp"] = resp["timestamp"]
         return data
 
     def query_order(self, orderId, **kwargs):
@@ -250,6 +251,7 @@ class Client(BaseClient):
         if "data" not in resp:
             return resp
         data = format_order_data(resp["data"])
+        data["timestamp"] = resp["timestamp"]
         return data
 
     def cancel_order(self, orderId, **kwargs):
@@ -283,6 +285,7 @@ class Client(BaseClient):
         if "data" not in resp:
             return resp
         data = format_order_data(resp["data"])
+        data["timestamp"] = resp["timestamp"]
         return data
 
     def all_orders(self, symbol=None, **kwargs):

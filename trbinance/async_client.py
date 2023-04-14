@@ -192,6 +192,7 @@ class AsyncClient(BaseClient):
             if resp["code"] != 0:
                 return resp
         data = format_order_data(resp["data"])
+        data["timestamp"] = resp["timestamp"]
         return data
 
     async def query_order(self, orderId, **kwargs):
@@ -206,6 +207,7 @@ class AsyncClient(BaseClient):
         if "data" not in resp:
             return resp
         data = format_order_data(resp["data"])
+        data["timestamp"] = resp["timestamp"]
         return data
 
     async def cancel_order(self, orderId, **kwargs):
@@ -219,6 +221,7 @@ class AsyncClient(BaseClient):
         if "data" not in resp:
             return resp
         data = format_order_data(resp["data"])
+        data["timestamp"] = resp["timestamp"]
         return data
 
     async def all_orders(self, symbol=None, **kwargs):
