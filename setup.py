@@ -6,6 +6,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         # Add your package dependencies here
+        "aiohttp",
+        "python-dotenv"
     ],
     author="akasimo",
     author_email="akasimo@fastmail.com",
