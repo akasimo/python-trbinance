@@ -48,7 +48,7 @@ def format_symbol_data(input_data):
                 'max': float(filters["PRICE_FILTER"]['maxPrice'])
             },
             'cost': {
-                'min': float(filters["MIN_NOTIONAL"]['minNotional']),
+                'min': float(filters["NOTIONAL"]['minNotional']),
                 'max': None
             },
             'leverage': {
